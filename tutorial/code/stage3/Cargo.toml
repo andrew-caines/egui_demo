@@ -1,0 +1,8 @@
+[package]
+name = "stage3"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+eframe.workspace = true
+egui_extras.workspace = true

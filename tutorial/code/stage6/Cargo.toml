@@ -1,0 +1,27 @@
+[package]
+name = "stage6"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+# "persistence" lets eframe save app state (and egui's own memory) between runs.
+eframe = { workspace = true, features = ["persistence"] }
+egui_extras.workspace = true
+serde.workspace = true
+# HTTP client. "json" adds `Response::json`, which decodes a body with serde.
+reqwest = { version = "0.13", features = ["json"] }
+# Async SQL toolkit. "runtime-tokio" makes it use the runtime the worker already has,
+# "sqlite" compiles SQLite into the app (nothing to install), "migrate" runs the
+# migrations folder and "macros" provides `migrate!` and `#[derive(FromRow)]`.
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "sqlite", "migrate", "macros"] }
+# Drives both reqwest and sqlx: "rt" is the runtime and "sync" the channel the UI uses
+# to send it work.
+tokio = { version = "1", features = ["rt", "sync"] }
+
+[dev-dependencies]
+egui_kittest = "0.37"
+# A real HTTP server on a random local port, so tests never touch the network.
+wiremock = "0.6"
+tokio = { version = "1", features = ["macros"] }
+# Throwaway folders for tests that need a real database file.
+tempfile = "3"

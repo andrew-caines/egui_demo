@@ -1,0 +1,13 @@
+[package]
+name = "stage4"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+# "persistence" lets eframe save app state (and egui's own memory) between runs.
+eframe = { workspace = true, features = ["persistence"] }
+egui_extras.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+egui_kittest = "0.37"

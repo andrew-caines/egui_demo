@@ -1,0 +1,7 @@
+[package]
+name = "stage2"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+eframe.workspace = true
