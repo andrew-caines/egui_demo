@@ -1,0 +1,60 @@
+[package]
+name = "concepts"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+eframe.workspace = true
+
+[dev-dependencies]
+egui_kittest = "0.37"
+
+[features]
+# Turns on eframe's save file. Only the `native_options_persist`, `run_native_restore` and
+# `app_trait_save_and_exit` examples need it.
+persistence = ["eframe/persistence"]
+
+[[example]]
+name = "native_options_persist"
+required-features = ["persistence"]
+# Run the example's unit tests with `cargo test -p concepts --all-features`.
+test = true
+
+# These examples carry unit tests of their own, run by `cargo test -p concepts`.
+[[example]]
+name = "viewport_builder_borderless"
+test = true
+
+[[example]]
+name = "viewport_builder_icon"
+test = true
+
+[[example]]
+name = "run_native_error"
+test = true
+
+[[example]]
+name = "run_native_style"
+test = true
+
+[[example]]
+name = "app_trait_thin_ui"
+test = true
+
+[[example]]
+name = "app_trait_confirm_close"
+test = true
+
+[[example]]
+name = "app_trait_input_hook"
+test = true
+
+[[example]]
+name = "app_trait_save_and_exit"
+required-features = ["persistence"]
+
+[[example]]
+name = "run_native_restore"
+required-features = ["persistence"]
+# Run the example's unit tests with `cargo test -p concepts --all-features`.
+test = true
