@@ -1,4 +1,4 @@
-param([string]$Exe, [string]$Out, [string]$Title = "Todo List", [int]$WaitSeconds = 4, [switch]$Graceful)
+param([string]$Exe, [string]$Out, [string]$Title = "Todo List", [int]$WaitSeconds = 4, [switch]$Graceful, [string]$ExeArgs = "")
 # Launch the app, wait, capture its window to a PNG, report whether it is still alive, then stop it.
 Add-Type -AssemblyName System.Drawing
 Add-Type @'
@@ -11,10 +11,13 @@ public static class Win {
     [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
     [DllImport("user32.dll", CharSet=CharSet.Unicode)] public static extern IntPtr FindWindow(string cls, string title);
     [DllImport("user32.dll")] public static extern bool PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
+    [DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr h, IntPtr hdc, uint flags);
 }
 '@
 [Win]::SetProcessDPIAware() | Out-Null
-$proc = Start-Process -FilePath $Exe -PassThru
+# -ExeArgs is passed to the app as its command line, e.g. -ExeArgs '"App shell"' for the concepts gallery.
+if ($ExeArgs) { $proc = Start-Process -FilePath $Exe -ArgumentList $ExeArgs -PassThru }
+else { $proc = Start-Process -FilePath $Exe -PassThru }
 Start-Sleep -Seconds $WaitSeconds
 $proc.Refresh()
 if ($proc.HasExited) { Write-Output "EXITED early with code $($proc.ExitCode)"; exit 1 }
@@ -28,7 +31,12 @@ $r = New-Object Win+RECT
 $w = $r.R - $r.L; $h = $r.B - $r.T
 $bmp = New-Object System.Drawing.Bitmap $w, $h
 $g = [System.Drawing.Graphics]::FromImage($bmp)
-$g.CopyFromScreen($r.L, $r.T, 0, 0, $bmp.Size)
+# Ask the window to paint itself into the bitmap. Copying the screen instead would capture
+# whatever window happens to be on top, which can be private (a terminal, a browser).
+$hdc = $g.GetHdc()
+$ok = [Win]::PrintWindow($handle, $hdc, 2)  # PW_RENDERFULLCONTENT: needed for GPU-drawn windows
+$g.ReleaseHdc($hdc)
+if (-not $ok) { Write-Output "PrintWindow failed; no image written"; Stop-Process -Id $proc.Id -Force; exit 1 }
 $bmp.Save($Out, [System.Drawing.Imaging.ImageFormat]::Png)
 $proc.Refresh()
 Write-Output "$(Split-Path $Exe -Leaf): ALIVE=$(-not $proc.HasExited) title='$Title' size=${w}x${h}"
